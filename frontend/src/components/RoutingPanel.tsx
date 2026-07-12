@@ -1,26 +1,41 @@
-interface Props{
+import { useGraph } from "../context/GraphContext";
+interface Props {
+   
 
-source:string;
-destination:string;
+  source:string;
 
-setSource:any;
-setDestination:any;
+  destination:string;
 
-findRoute:any;
+  algorithm:string;
+
+  setSource:any;
+
+  setDestination:any;
+
+  setAlgorithm:any;
+
+  findRoute:any;
 
 }
 
 function RoutingPanel({
 
 source,
+
 destination,
 
+algorithm,
+
 setSource,
+
 setDestination,
+
+setAlgorithm,
 
 findRoute
 
 }:Props){
+    const { nodes } = useGraph();
 
 return(
 
@@ -32,39 +47,77 @@ Routing Configuration
 
 </h2>
 
-<label>Source</label>
+<label className="font-medium">
+
+Source
+
+</label>
 
 <select
-className="border p-2 w-full mb-4"
-value={source}
-onChange={(e)=>setSource(e.target.value)}
+  className="border rounded p-2 w-full mb-4"
+  value={source}
+  onChange={(e) => setSource(e.target.value)}
 >
+  {nodes.map((node: any) => {
+    const label = node.data.label
+      .replace("👤 ", "")
+      .replace("🔁 ", "");
 
-<option>Alice</option>
-<option>R1</option>
-<option>R2</option>
-<option>Bob</option>
-
+    return (
+      <option key={node.id} value={label}>
+        {label}
+      </option>
+    );
+  })}
 </select>
 
-<label>Destination</label>
+<label className="font-medium">
+
+Destination
+
+</label>
 
 <select
-className="border p-2 w-full mb-5"
-value={destination}
-onChange={(e)=>setDestination(e.target.value)}
+  className="border rounded p-2 w-full mb-4"
+  value={destination}
+  onChange={(e) => setDestination(e.target.value)}
+>
+  {nodes.map((node: any) => {
+    const label = node.data.label
+      .replace("👤 ", "")
+      .replace("🔁 ", "");
+
+    return (
+      <option key={node.id} value={label}>
+        {label}
+      </option>
+    );
+  })}
+</select>
+
+<label className="font-medium">
+
+Algorithm
+
+</label>
+
+<select
+className="border rounded p-2 w-full mb-5"
+value={algorithm}
+onChange={(e)=>setAlgorithm(e.target.value)}
 >
 
-<option>Bob</option>
-<option>R1</option>
-<option>R2</option>
-<option>Alice</option>
+<option>Shortest Path</option>
+
+<option>Highest Fidelity</option>
+
+<option>Highest Probability</option>
 
 </select>
 
 <button
 onClick={findRoute}
-className="bg-blue-600 text-white w-full py-3 rounded"
+className="bg-blue-600 text-white py-3 w-full rounded-lg"
 >
 
 Find Best Route

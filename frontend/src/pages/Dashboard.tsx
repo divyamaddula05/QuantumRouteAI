@@ -3,13 +3,18 @@ import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import DashboardCards from "../components/DashboardCards";
-import RouteResult from "../components/RouteResult";
 import NetworkCanvas from "../components/NetworkCanvas";
 import RoutingPanel from "../components/RoutingPanel";
-
+import RouteResult from "../components/RouteResult";
+import { calculateNetworkHealth } from "../utils/networkHealth";
+import { useGraph } from "../context/GraphContext";
+import NetworkHealth from "../components/NetworkHealth";
 import api from "../services/api";
 
 function Dashboard() {
+  const { nodes, edges } = useGraph();
+  const health = calculateNetworkHealth(edges);
+
 
   const [route, setRoute] = useState<any>(null);
 
@@ -17,27 +22,38 @@ function Dashboard() {
 
   const [destination, setDestination] = useState("Bob");
 
-  const findRoute = async () => {
-  try {
-    console.log("Sending request...");
+  const [algorithm, setAlgorithm] = useState("Shortest Path");
 
-    const response = await api.get("/best-route", {
-      params: {
+  const findRoute = async () => {
+    try {
+      const response = await api.post("/best-route", {
+        nodes: nodes.map((node: any) => ({
+          id: node.id,
+          label: node.data.label,
+        })),
+
+        edges: edges.map((edge: any) => ({
+            source: edge.source,
+            target: edge.target,
+            distance: edge.data?.distance ?? 40,
+            fidelity: edge.data?.fidelity ?? 0.95,
+            probability: edge.data?.probability ?? 0.95,
+        })),
+
         source,
         destination,
-      },
-    });
+        algorithm,
+      });
 
-    console.log("Backend Response:", response.data);
+      console.log(response.data);
 
-    setRoute(response.data);
-  } catch (error: any) {
-    console.error("API Error:", error);
-    console.error("Response:", error.response);
+      setRoute(response.data);
+    } catch (error) {
+      console.error(error);
+      alert("Unable to calculate route");
+    }
+  };
 
-    alert("Unable to calculate route");
-  }
-};
   return (
     <div className="flex">
 
@@ -50,17 +66,19 @@ function Dashboard() {
         <div className="p-6">
 
           <DashboardCards
-            nodes={4}
-            links={4}
-            fidelity={route ? route.fidelity : 0}
-            success={route ? route.probability * 100 : 0}
+              nodes={nodes.length}
+              links={edges.length}
+              fidelity={health.averageFidelity}
+              success={health.averageProbability * 100}
           />
 
           <div className="grid grid-cols-4 gap-5 mt-6">
 
             <div className="col-span-3">
 
-              <NetworkCanvas route={route} />
+              <NetworkCanvas
+                route={route}
+              />
 
             </div>
 
@@ -69,12 +87,20 @@ function Dashboard() {
               <RoutingPanel
                 source={source}
                 destination={destination}
+                algorithm={algorithm}
                 setSource={setSource}
                 setDestination={setDestination}
+                setAlgorithm={setAlgorithm}
                 findRoute={findRoute}
               />
 
-              <RouteResult route={route} />
+              <RouteResult
+                route={route}
+              />
+              <NetworkHealth
+                health={health}
+                nodes={nodes.length}
+              />
 
             </div>
 

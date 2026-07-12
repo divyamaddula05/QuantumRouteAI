@@ -15,11 +15,35 @@ def calculate_best_route(request):
             probability=edge.probability,
         )
 
+    if request.algorithm == "Shortest Path":
+
+        weight = "distance"
+
+    elif request.algorithm == "Highest Fidelity":
+
+        # larger fidelity should become smaller cost
+        for u, v in graph.edges():
+            graph[u][v]["cost"] = 1 - graph[u][v]["fidelity"]
+
+        weight = "cost"
+
+    elif request.algorithm == "Highest Probability":
+
+        # larger probability should become smaller cost
+        for u, v in graph.edges():
+            graph[u][v]["cost"] = 1 - graph[u][v]["probability"]
+
+        weight = "cost"
+
+    else:
+
+        weight = "distance"
+
     path = nx.shortest_path(
         graph,
         request.source,
         request.destination,
-        weight="distance",
+        weight=weight,
     )
 
     fidelity = 1
@@ -42,6 +66,7 @@ def calculate_best_route(request):
         ])
 
     return {
+        "algorithm": request.algorithm,
         "path": path,
         "distance": distance,
         "fidelity": round(fidelity, 4),

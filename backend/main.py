@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 import networkx as nx
-
+from models import RouteRequest
 app = FastAPI()
 
 app.add_middleware(
@@ -15,71 +15,97 @@ app.add_middleware(
 def home():
     return {"message": "Backend Running"}
 
-@app.get("/best-route")
-def best_route(
-    source: str = Query(...),
-    destination: str = Query(...)
-):
+@app.post("/best-route")
+def best_route(request: RouteRequest):
 
     graph = nx.Graph()
 
-    graph.add_edge("Alice","R1",
-                   distance=50,
-                   fidelity=0.95,
-                   probability=0.96)
+    # Map node IDs to labels
+    id_to_label = {}
 
-    graph.add_edge("R1","Bob",
-                   distance=60,
-                   fidelity=0.93,
-                   probability=0.94)
+    for node in request.nodes:
+        label = (
+            node.label
+            .replace("👤 ", "")
+            .replace("🔁 ", "")
+        )
+        id_to_label[node.id] = label
 
-    graph.add_edge("Alice","R2",
-                   distance=70,
-                   fidelity=0.90,
-                   probability=0.91)
+    # Build graph from frontend edges
+    for edge in request.edges:
 
-    graph.add_edge("R2","Bob",
-                   distance=55,
-                   fidelity=0.94,
-                   probability=0.95)
+        graph.add_edge(
+            id_to_label[edge.source],
+            id_to_label[edge.target],
+            distance=edge.distance,
+            fidelity=edge.fidelity,
+            probability=edge.probability,
+        )
 
     path = nx.shortest_path(
         graph,
-        source,
-        destination,
-        weight="distance"
+        request.source,
+        request.destination,
+        weight="distance",
     )
 
     distance = 0
     fidelity = 1
     probability = 1
 
-    highlightEdges = []
+    highlight = []
 
-    for i in range(len(path)-1):
+    label_to_id = {v: k for k, v in id_to_label.items()}
 
-        edge = graph[path[i]][path[i+1]]
+    for i in range(len(path) - 1):
+
+        edge = graph[path[i]][path[i + 1]]
 
         distance += edge["distance"]
         fidelity *= edge["fidelity"]
         probability *= edge["probability"]
 
-        node_map = {
-            "Alice": "1",
-            "R1": "2",
-            "R2": "3",
-            "Bob": "4"
-        }
-
-        highlightEdges.append([
-            node_map[path[i]],
-            node_map[path[i + 1]]
+        highlight.append([
+            label_to_id[path[i]],
+            label_to_id[path[i + 1]]
         ])
+        reason = ""
 
-    return{
-        "path":path,
-        "distance":distance,
-        "fidelity":round(fidelity,4),
-        "probability":round(probability,4),
-        "highlightEdges":highlightEdges
-    }
+        if request.algorithm == "Shortest Path":
+            reason = (
+                "This route minimizes the total communication distance."
+            )
+
+        elif request.algorithm == "Highest Fidelity":
+            reason = (
+                "This route provides the highest end-to-end quantum fidelity."
+            )
+
+        elif request.algorithm == "Highest Probability":
+            reason = (
+                "This route maximizes the probability of successful quantum transmission."
+            )
+
+        latency = round(distance / 25, 2)
+
+        score = round(
+            (
+                fidelity * 40 +
+                probability * 40 +
+                (1 / (distance + 1)) * 20
+            ),
+            2
+        )
+
+    return {
+        "algorithm": request.algorithm,
+        "path": path,
+        "distance": distance,
+        "fidelity": round(fidelity, 4),
+        "probability": round(probability, 4),
+        "highlightEdges": highlight,
+
+        "reason": reason,
+        "latency": latency,
+        "score": score,
+}

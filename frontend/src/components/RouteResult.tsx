@@ -1,86 +1,102 @@
-interface Props{
-
-route:any;
-
+interface Props {
+  route: any;
 }
 
-function RouteResult({route}:Props){
+function RouteResult({ route }: Props) {
 
-if(!route){
+  if (!route) {
+    return (
+      <div className="bg-white rounded-xl shadow p-5">
 
-return(
+        <h2 className="text-xl font-bold">
+          Best Route
+        </h2>
 
-<div className="bg-white rounded-xl shadow p-5">
+        <hr className="my-4" />
 
-<h2 className="text-xl font-bold">
+        <p>No route calculated.</p>
 
-Best Route
+      </div>
+    );
+  }
 
-</h2>
+  return (
 
-<hr className="my-4"/>
+    <div className="bg-white rounded-xl shadow p-5">
 
-<p>No route calculated.</p>
+      <h2 className="text-xl font-bold">
+        🤖 AI Recommendation
+      </h2>
 
-</div>
+      <hr className="my-4" />
 
-);
+      <p>
+        <b>Algorithm</b>
+      </p>
 
-}
+      <p>{route.algorithm}</p>
 
-return(
+      <br />
 
-<div className="bg-white rounded-xl shadow p-5">
+      <p>
+        <b>Path</b>
+      </p>
 
-<h2 className="text-xl font-bold">
+      <p>{route.path.join(" → ")}</p>
 
-Best Route
+      <br />
 
-</h2>
+      <p>
+        <b>Distance</b>
+      </p>
 
-<hr className="my-4"/>
+      <p>{route.distance} km</p>
 
-<p>
+      <br />
 
-<b>Path</b>
+      <p>
+        <b>Fidelity</b>
+      </p>
 
-</p>
+      <p>{route.fidelity}</p>
 
-<p>{route.path.join(" → ")}</p>
+      <br />
 
-<br/>
+      <p>
+        <b>Success Probability</b>
+      </p>
 
-<p>
+      <p>{(route.probability * 100).toFixed(2)}%</p>
 
-<b>Distance</b>
+      <br />
 
-</p>
+      <p>
+        <b>Estimated Latency</b>
+      </p>
 
-<p>{route.distance} km</p>
+      <p>{route.latency} ms</p>
 
-<br/>
+      <br />
 
-<p>
+      <p>
+        <b>AI Score</b>
+      </p>
 
-<b>Fidelity</b>
+      <p>{route.score}/100</p>
 
-</p>
+      <br />
 
-<p>{route.fidelity}</p>
+      <p>
+        <b>Recommendation</b>
+      </p>
 
-<br/>
+      <p className="text-green-700 font-medium">
+        {route.reason}
+      </p>
 
-<p>
+    </div>
 
-<b>Success Probability</b>
-
-</p>
-
-<p>{(route.probability*100).toFixed(2)}%</p>
-
-</div>
-
-);
+  );
 
 }
 
