@@ -3,7 +3,7 @@ import {
   Network,
   BarChart3,
 } from "lucide-react";
-
+import { NavLink } from "react-router-dom";
 import { Link, useLocation } from "react-router-dom";
 
 function Sidebar() {
@@ -32,10 +32,17 @@ function Sidebar() {
           Dashboard
         </Link>
 
-        <div className="flex items-center gap-3 p-3 rounded-lg text-slate-400 cursor-default">
+        <Link
+          to="/network"
+          className={`flex items-center gap-3 p-3 rounded-lg transition ${
+            location.pathname === "/network"
+              ? "bg-slate-800"
+              : "hover:bg-slate-800"
+          }`}
+        >
           <Network size={20} />
           Quantum Network
-        </div>
+        </Link>
 
         <Link
           to="/analytics"
