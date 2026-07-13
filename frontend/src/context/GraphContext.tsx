@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
 import {
   useNodesState,
@@ -18,6 +18,8 @@ import {
 interface GraphContextType {
   nodes: Node[];
   edges: Edge[];
+  route: any;
+  setRoute: any;
   setNodes: any;
   setEdges: any;
   onNodesChange: any;
@@ -33,12 +35,15 @@ export function GraphProvider({ children }: any) {
 
   const [edges, setEdges, onEdgesChange] =
     useEdgesState(sampleEdges);
+  const [route, setRoute] = useState<any>(null);
 
   return (
     <GraphContext.Provider
       value={{
         nodes,
         edges,
+        route,
+        setRoute,
         setNodes,
         setEdges,
         onNodesChange,

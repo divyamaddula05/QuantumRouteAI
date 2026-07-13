@@ -12,11 +12,17 @@ import NetworkHealth from "../components/NetworkHealth";
 import api from "../services/api";
 
 function Dashboard() {
-  const { nodes, edges } = useGraph();
+  const {
+    nodes,
+    edges,
+    route,
+    setRoute,
+  } = useGraph();
+  console.log("Dashboard Nodes:", nodes);
   const health = calculateNetworkHealth(edges);
 
 
-  const [route, setRoute] = useState<any>(null);
+  // const [route, setRoute] = useState<any>(null);
 
   const [source, setSource] = useState("Alice");
 
